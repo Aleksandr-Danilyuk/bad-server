@@ -6,7 +6,7 @@ import express, { json, urlencoded } from 'express'
 import mongoose from 'mongoose'
 import path from 'path'
 import { CSRF_HEADER_NAME, DB_ADDRESS } from './config'
-import { csrfCookieMiddleware, csrfValidationMiddleware } from './middlewares/csrf'
+import { csrfCookieMiddleware } from './middlewares/csrf'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
@@ -34,22 +34,7 @@ app.options('*', cors())
 // CSRF защита - устанавливаем токен для всех запросов
 app.use(csrfCookieMiddleware)
 
-// CSRF защита для state-changing операций (POST, PUT, PATCH, DELETE)
-// GET запросы не требуют валидации CSRF токена
-app.patch('/auth/me', csrfValidationMiddleware)
-app.post('/auth/*', csrfValidationMiddleware)
-app.post('/order/*', csrfValidationMiddleware)
-app.put('/order/*', csrfValidationMiddleware)
-app.patch('/order/*', csrfValidationMiddleware)
-app.delete('/order/*', csrfValidationMiddleware)
-app.post('/product/*', csrfValidationMiddleware)
-app.put('/product/*', csrfValidationMiddleware)
-app.patch('/product/*', csrfValidationMiddleware)
-app.delete('/product/*', csrfValidationMiddleware)
-app.patch('/customers/*', csrfValidationMiddleware)
-app.delete('/customers/*', csrfValidationMiddleware)
-app.post('/upload/*', csrfValidationMiddleware)
-
+// Применяем маршруты (CSRF защита добавлена внутри роутеров)
 app.use(routes)
 app.use(errors())
 app.use(errorHandler)

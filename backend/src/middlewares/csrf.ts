@@ -108,3 +108,27 @@ export function csrfSafeMethodsMiddleware(
     // Для безопасных методов только устанавливаем cookie
     csrfCookieMiddleware(req, res, next)
 }
+
+/**
+ * Контроллер для получения CSRF токена
+ * Возвращает токен в JSON формате
+ */
+export function getCsrfToken(req: Request, res: Response) {
+    // Генерируем новый токен если его нет
+    if (!res.locals.csrfToken) {
+        res.locals.csrfToken = generateCsrfToken()
+    }
+
+    // Устанавливаем cookie
+    res.cookie(CSRF_COOKIE_NAME, res.locals.csrfToken, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60 * 1000,
+    })
+
+    res.json({
+        success: true,
+        csrfToken: res.locals.csrfToken,
+    })
+}
