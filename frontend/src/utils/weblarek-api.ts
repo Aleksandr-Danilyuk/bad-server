@@ -16,7 +16,7 @@ import {
     UserResponse,
     UserResponseToken,
 } from '@types'
-import { getCookie, setCookie } from './cookie'
+import { getCookie, getCsrfToken, setCookie } from './cookie'
 
 export const enum RequestStatus {
     Idle = 'idle',
@@ -153,6 +153,7 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${getCookie('accessToken')}`,
+                'X-CSRF-Token': getCsrfToken() || '',
             },
         }).then((data: IOrderResult) => data)
     }
@@ -167,6 +168,7 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${getCookie('accessToken')}`,
+                'X-CSRF-Token': getCsrfToken() || '',
             },
         })
     }
@@ -232,6 +234,7 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
             body: JSON.stringify(data),
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRF-Token': getCsrfToken() || '',
             },
             credentials: 'include',
         })
@@ -243,6 +246,7 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
             body: JSON.stringify(data),
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRF-Token': getCsrfToken() || '',
             },
             credentials: 'include',
         })
@@ -259,6 +263,18 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
         return this.requestWithRefresh<string[]>('/auth/user/roles', {
             method: 'GET',
             headers: { Authorization: `Bearer ${getCookie('accessToken')}` },
+        })
+    }
+
+    updateCurrentUser = (data: Partial<{ name: string; email: string }>) => {
+        return this.requestWithRefresh<UserResponse>('/auth/me', {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${getCookie('accessToken')}`,
+                'X-CSRF-Token': getCsrfToken() || '',
+            },
         })
     }
 
@@ -291,6 +307,28 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
         )
     }
 
+    updateCustomer = (idCustomer: string, data: Partial<{ name: string; email: string; roles: string[] }>) => {
+        return this.requestWithRefresh<ICustomerResult>(`/customers/${idCustomer}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${getCookie('accessToken')}`,
+                'X-CSRF-Token': getCsrfToken() || '',
+            },
+        })
+    }
+
+    deleteCustomer = (idCustomer: string) => {
+        return this.requestWithRefresh<ICustomerResult>(`/customers/${idCustomer}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${getCookie('accessToken')}`,
+                'X-CSRF-Token': getCsrfToken() || '',
+            },
+        })
+    }
+
     logoutUser = () => {
         return this.request<ServerResponse<unknown>>('/auth/logout', {
             method: 'GET',
@@ -306,6 +344,7 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${getCookie('accessToken')}`,
+                'X-CSRF-Token': getCsrfToken() || '',
             },
         }).then((data: IProduct) => ({
             ...data,
@@ -322,6 +361,7 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
             body: data,
             headers: {
                 Authorization: `Bearer ${getCookie('accessToken')}`,
+                'X-CSRF-Token': getCsrfToken() || '',
             },
         }).then((data) => ({
             ...data,
@@ -336,6 +376,7 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${getCookie('accessToken')}`,
+                'X-CSRF-Token': getCsrfToken() || '',
             },
         }).then((data: IProduct) => ({
             ...data,
@@ -351,6 +392,7 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
             method: 'DELETE',
             headers: {
                 Authorization: `Bearer ${getCookie('accessToken')}`,
+                'X-CSRF-Token': getCsrfToken() || '',
             },
         })
     }
