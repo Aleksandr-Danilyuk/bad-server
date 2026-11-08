@@ -104,3 +104,39 @@ export function getCsrfToken(_req: Request, res: Response) {
         csrfToken: res.locals.csrfToken,
     })
 }
+
+/**
+ * Middleware для валидации CSRF токена для всех запросов
+ */
+export function validateCsrf(
+    req: Request,
+    _res: Response,
+    next: NextFunction
+) {
+    // Пропускаем безопасные методы
+    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+        return next()
+    }
+
+    // Пропускаем эндпоинты без CSRF защиты
+    if (req.path === '/auth/login' || req.path === '/auth/register' || req.path === '/auth/csrf-token') {
+        return next()
+    }
+
+    const csrfTokenFromCookie = req.cookies[CSRF_COOKIE_NAME]
+    const csrfTokenFromHeader = req.header(CSRF_HEADER_NAME)
+
+    if (!csrfTokenFromCookie) {
+        return next(new ForbiddenError('CSRF токен отсутствует в cookie'))
+    }
+
+    if (!csrfTokenFromHeader) {
+        return next(new ForbiddenError('CSRF токен отсутствует в заголовке'))
+    }
+
+    if (!safeCompare(csrfTokenFromCookie, csrfTokenFromHeader)) {
+        return next(new ForbiddenError('Невалидный CSRF токен'))
+    }
+
+    next()
+}

@@ -5,8 +5,9 @@ import 'dotenv/config'
 import express, { json, urlencoded } from 'express'
 import mongoose from 'mongoose'
 import path from 'path'
+import rateLimit from 'express-rate-limit'
+import { validateCsrf } from './middlewares/csrf'
 import { DB_ADDRESS } from './config'
-import { csrfCookieMiddleware, csrfValidationMiddleware } from './middlewares/csrf'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
@@ -15,6 +16,8 @@ const { PORT = 3000, ORIGIN_ALLOW = 'http://localhost' } = process.env
 const corsOptions = { origin: ORIGIN_ALLOW, credentials: true }
 const app = express()
 
+app.disable('x-powered-by')
+
 app.use(cookieParser())
 
 app.use(cors(corsOptions))
@@ -22,22 +25,16 @@ app.use(cors(corsOptions))
 
 app.use(serveStatic(path.join(__dirname, 'public')))
 
-app.use(urlencoded({ extended: true }))
-app.use(json())
+app.use(urlencoded({ extended: true, limit: '10kb' }))
+app.use(json({ limit: '10kb' }))
 
-// CSRF защита для всех state-changing методов
-app.use(csrfCookieMiddleware)
-app.use((req, res, next) => {
-    // Исключаем эндпоинт получения CSRF токена и логин
-    if (req.path === '/auth/csrf-token' || req.path === '/auth/login') {
-        return next()
-    }
-    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
-        csrfValidationMiddleware(req, res, next)
-    } else {
-        next()
-    }
+const limiter = rateLimit({
+    windowMs: 60 * 1000,
+    limit: 40,
 })
+app.use(limiter)
+
+app.use(validateCsrf)
 
 app.options('*', cors(corsOptions))
 app.use(routes)

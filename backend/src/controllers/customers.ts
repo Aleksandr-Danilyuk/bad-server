@@ -1,8 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
 import { FilterQuery } from 'mongoose'
+import BadRequestError from '../errors/bad-request-error'
 import NotFoundError from '../errors/not-found-error'
 import Order from '../models/order'
 import User, { IUser } from '../models/user'
+import escapeRegExp from '../utils/escapeRegExp'
 
 // TODO: Добавить guard admin
 // eslint-disable-next-line max-len
@@ -30,6 +32,19 @@ export const getCustomers = async (
         } = req.query
 
         const filters: FilterQuery<Partial<IUser>> = {}
+
+        const normalizedLimit =
+            Number.isNaN(Number(limit)) ||
+            Number(limit) < 1 ||
+            Number(limit) > 10
+                ? 10
+                : Number(limit)
+
+        const normalizedPage =
+            Number.isNaN(Number(page)) ||
+            Number(page) < 1
+                ? 1
+                : Number(page)
 
         if (registrationDateFrom) {
             filters.createdAt = {
@@ -92,7 +107,13 @@ export const getCustomers = async (
         }
 
         if (search) {
-            const searchRegex = new RegExp(search as string, 'i')
+            if (typeof search !== 'string') {
+                return next(new BadRequestError('Получен невалидный тип поиска'))
+            }
+            if (search.length > 100) {
+                return next(new BadRequestError('Превышен лимит длины поиска'))
+            }
+            const searchRegex = new RegExp(escapeRegExp(search), 'i')
             const orders = await Order.find(
                 {
                     $or: [{ deliveryAddress: searchRegex }],
@@ -116,8 +137,8 @@ export const getCustomers = async (
 
         const options = {
             sort,
-            skip: (Number(page) - 1) * Number(limit),
-            limit: Number(limit),
+            skip: (normalizedPage - 1) * normalizedLimit,
+            limit: normalizedLimit,
         }
 
         const users = await User.find(filters, null, options).populate([
@@ -137,15 +158,15 @@ export const getCustomers = async (
         ])
 
         const totalUsers = await User.countDocuments(filters)
-        const totalPages = Math.ceil(totalUsers / Number(limit))
+        const totalPages = Math.ceil(totalUsers / normalizedLimit)
 
         res.status(200).json({
             customers: users,
             pagination: {
                 totalUsers,
                 totalPages,
-                currentPage: Number(page),
-                pageSize: Number(limit),
+                currentPage: normalizedPage,
+                pageSize: normalizedLimit,
             },
         })
     } catch (error) {
