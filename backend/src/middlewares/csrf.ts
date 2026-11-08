@@ -34,7 +34,7 @@ export function csrfCookieMiddleware(
     res.cookie(CSRF_COOKIE_NAME, res.locals.csrfToken, {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: 24 * 60 * 60 * 1000,
     })
 
@@ -95,7 +95,7 @@ export function getCsrfToken(_req: Request, res: Response) {
     res.cookie(CSRF_COOKIE_NAME, res.locals.csrfToken, {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: 24 * 60 * 60 * 1000,
     })
 

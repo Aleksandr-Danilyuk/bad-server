@@ -11,13 +11,13 @@ import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
 
-const { PORT = 3000 } = process.env
+const { PORT = 3000, ORIGIN_ALLOW = 'http://localhost' } = process.env
+const corsOptions = { origin: ORIGIN_ALLOW, credentials: true }
 const app = express()
 
 app.use(cookieParser())
 
-app.use(cors())
-// app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
+app.use(cors(corsOptions))
 // app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(serveStatic(path.join(__dirname, 'public')))
@@ -39,7 +39,7 @@ app.use((req, res, next) => {
     }
 })
 
-app.options('*', cors())
+app.options('*', cors(corsOptions))
 app.use(routes)
 app.use(errors())
 app.use(errorHandler)
