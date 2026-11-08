@@ -3,7 +3,6 @@ import { FilterQuery } from 'mongoose'
 import NotFoundError from '../errors/not-found-error'
 import Order from '../models/order'
 import User, { IUser } from '../models/user'
-import escapeRegExp from '../utils/escapeRegExp'
 
 // TODO: Добавить guard admin
 // eslint-disable-next-line max-len
@@ -93,9 +92,7 @@ export const getCustomers = async (
         }
 
         if (search) {
-            // Экранируем специальные символы для защиты от ReDoS и инъекций RegExp
-            const escapedSearch = escapeRegExp(search as string)
-            const searchRegex = new RegExp(escapedSearch, 'i')
+            const searchRegex = new RegExp(search as string, 'i')
             const orders = await Order.find(
                 {
                     $or: [{ deliveryAddress: searchRegex }],

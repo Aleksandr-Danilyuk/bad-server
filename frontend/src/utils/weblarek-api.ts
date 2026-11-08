@@ -72,13 +72,6 @@ class Api {
         })
     }
 
-    getCsrfToken = () => {
-        return this.request<{ success: true; csrfToken: string }>('/auth/csrf-token', {
-            method: 'GET',
-            credentials: 'include',
-        })
-    }
-
     protected requestWithRefresh = async <T>(
         endpoint: string,
         options: RequestInit
@@ -153,31 +146,27 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
         }))
     }
 
-    createOrder = async (order: IOrder): Promise<IOrderResult> => {
-        const csrfData = await this.getCsrfToken()
+    createOrder = (order: IOrder): Promise<IOrderResult> => {
         return this.requestWithRefresh<IOrderResult>('/order', {
             method: 'POST',
             body: JSON.stringify(order),
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${getCookie('accessToken')}`,
-                'X-CSRF-Token': csrfData.csrfToken,
             },
         }).then((data: IOrderResult) => data)
     }
 
-    updateOrderStatus = async (
+    updateOrderStatus = (
         status: StatusType,
         orderNumber: string
     ): Promise<IOrderResult> => {
-        const csrfData = await this.getCsrfToken()
         return this.requestWithRefresh<IOrderResult>(`/order/${orderNumber}`, {
             method: 'PATCH',
             body: JSON.stringify({ status }),
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${getCookie('accessToken')}`,
-                'X-CSRF-Token': csrfData.csrfToken,
             },
         })
     }
@@ -237,29 +226,23 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
         )
     }
 
-    loginUser = async (data: UserLoginBodyDto) => {
-        // Сначала получаем CSRF токен
-        const csrfData = await this.getCsrfToken()
+    loginUser = (data: UserLoginBodyDto) => {
         return this.request<UserResponseToken>('/auth/login', {
             method: 'POST',
             body: JSON.stringify(data),
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-Token': csrfData.csrfToken,
             },
             credentials: 'include',
         })
     }
 
-    registerUser = async (data: UserRegisterBodyDto) => {
-        // Сначала получаем CSRF токен
-        const csrfData = await this.getCsrfToken()
+    registerUser = (data: UserRegisterBodyDto) => {
         return this.request<UserResponseToken>('/auth/register', {
             method: 'POST',
             body: JSON.stringify(data),
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-Token': csrfData.csrfToken,
             },
             credentials: 'include',
         })
@@ -276,19 +259,6 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
         return this.requestWithRefresh<string[]>('/auth/user/roles', {
             method: 'GET',
             headers: { Authorization: `Bearer ${getCookie('accessToken')}` },
-        })
-    }
-
-    updateCurrentUser = async (data: Partial<{ name: string; email: string }>) => {
-        const csrfData = await this.getCsrfToken()
-        return this.requestWithRefresh<UserResponse>('/auth/me', {
-            method: 'PATCH',
-            body: JSON.stringify(data),
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${getCookie('accessToken')}`,
-                'X-CSRF-Token': csrfData.csrfToken,
-            },
         })
     }
 
@@ -321,30 +291,6 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
         )
     }
 
-    updateCustomer = async (idCustomer: string, data: Partial<{ name: string; email: string; roles: string[] }>) => {
-        const csrfData = await this.getCsrfToken()
-        return this.requestWithRefresh<ICustomerResult>(`/customers/${idCustomer}`, {
-            method: 'PATCH',
-            body: JSON.stringify(data),
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${getCookie('accessToken')}`,
-                'X-CSRF-Token': csrfData.csrfToken,
-            },
-        })
-    }
-
-    deleteCustomer = async (idCustomer: string) => {
-        const csrfData = await this.getCsrfToken()
-        return this.requestWithRefresh<ICustomerResult>(`/customers/${idCustomer}`, {
-            method: 'DELETE',
-            headers: {
-                Authorization: `Bearer ${getCookie('accessToken')}`,
-                'X-CSRF-Token': csrfData.csrfToken,
-            },
-        })
-    }
-
     logoutUser = () => {
         return this.request<ServerResponse<unknown>>('/auth/logout', {
             method: 'GET',
@@ -352,16 +298,14 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
         })
     }
 
-    createProduct = async (data: Omit<IProduct, '_id'>) => {
+    createProduct = (data: Omit<IProduct, '_id'>) => {
         console.log(data)
-        const csrfData = await this.getCsrfToken()
         return this.requestWithRefresh<IProduct>('/product', {
             method: 'POST',
             body: JSON.stringify(data),
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${getCookie('accessToken')}`,
-                'X-CSRF-Token': csrfData.csrfToken,
             },
         }).then((data: IProduct) => ({
             ...data,
@@ -372,14 +316,12 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
         }))
     }
 
-    uploadFile = async (data: FormData) => {
-        const csrfData = await this.getCsrfToken()
+    uploadFile = (data: FormData) => {
         return this.requestWithRefresh<IFile>('/upload', {
             method: 'POST',
             body: data,
             headers: {
                 Authorization: `Bearer ${getCookie('accessToken')}`,
-                'X-CSRF-Token': csrfData.csrfToken,
             },
         }).then((data) => ({
             ...data,
@@ -387,15 +329,13 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
         }))
     }
 
-    updateProduct = async (data: Partial<Omit<IProduct, '_id'>>, id: string) => {
-        const csrfData = await this.getCsrfToken()
+    updateProduct = (data: Partial<Omit<IProduct, '_id'>>, id: string) => {
         return this.requestWithRefresh<IProduct>(`/product/${id}`, {
             method: 'PATCH',
             body: JSON.stringify(data),
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${getCookie('accessToken')}`,
-                'X-CSRF-Token': csrfData.csrfToken,
             },
         }).then((data: IProduct) => ({
             ...data,
@@ -406,13 +346,11 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
         }))
     }
 
-    deleteProduct = async (id: string) => {
-        const csrfData = await this.getCsrfToken()
+    deleteProduct = (id: string) => {
         return this.requestWithRefresh<IProduct>(`/product/${id}`, {
             method: 'DELETE',
             headers: {
                 Authorization: `Bearer ${getCookie('accessToken')}`,
-                'X-CSRF-Token': csrfData.csrfToken,
             },
         })
     }
