@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import {
+    getCsrfToken,
     getCurrentUser,
     getCurrentUserRoles,
     login,
@@ -8,7 +9,6 @@ import {
     register,
     updateCurrentUser,
 } from '../controllers/auth'
-import { getCsrfToken } from '../middlewares/csrf'
 import auth from '../middlewares/auth'
 
 const authRouter = Router()
