@@ -13,6 +13,9 @@
   },
   "author": "< Укажите здесь автора работы >",
   "license": "ISC",
+  "overrides": {
+    "minimatch": "^11.0.1"
+  },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.7",
@@ -36,7 +39,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@faker-js/faker": "^9.0.6",
+    "@faker-js/faker": "^10.6.0",
     "@types/jsonwebtoken": "^9.0.6",
     "bcryptjs": "^2.4.3",
     "celebrate": "^16.0.0",
