@@ -28,6 +28,10 @@ app.use(json())
 // CSRF защита для всех state-changing методов
 app.use(csrfCookieMiddleware)
 app.use((req, res, next) => {
+    // Исключаем эндпоинт получения CSRF токена и логин
+    if (req.path === '/auth/csrf-token' || req.path === '/auth/login') {
+        return next()
+    }
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
         csrfValidationMiddleware(req, res, next)
     } else {
