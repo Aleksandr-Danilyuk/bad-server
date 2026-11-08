@@ -1,4 +1,4 @@
-export function getCookie(name: string): string | undefined {
+export function getCookie(name: string) {
     const matches = document.cookie.match(
         new RegExp(
             '(?:^|; )' +
@@ -39,11 +39,4 @@ export function setCookie(
         }
     }
     document.cookie = updatedCookie
-}
-
-/**
- * Получает CSRF токен из cookie
- */
-export function getCsrfToken(): string | undefined {
-    return getCookie('csrfToken')
 }

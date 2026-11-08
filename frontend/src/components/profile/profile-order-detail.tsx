@@ -70,9 +70,15 @@ export default function ProfileOrderDetail() {
                 extraClass: styles.profile__gridRowFullWidth,
                 render: (dataInfo: OrderData) => (
                     <>
-                        <div className={styles.profile__comment}>
-                            {dataInfo.comment || 'Комментариев нет'}
-                        </div>
+                        {dataInfo.comment ? (
+                            <div
+                                dangerouslySetInnerHTML={{
+                                    __html: dataInfo.comment,
+                                }}
+                            />
+                        ) : (
+                            'Комментариев нет'
+                        )}
                     </>
                 ),
             },
