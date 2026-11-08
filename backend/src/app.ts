@@ -6,6 +6,7 @@ import express, { json, urlencoded } from 'express'
 import mongoose from 'mongoose'
 import path from 'path'
 import { DB_ADDRESS } from './config'
+import { csrfCookieMiddleware, csrfValidationMiddleware } from './middlewares/csrf'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
@@ -23,6 +24,16 @@ app.use(serveStatic(path.join(__dirname, 'public')))
 
 app.use(urlencoded({ extended: true }))
 app.use(json())
+
+// CSRF защита для всех state-changing методов
+app.use(csrfCookieMiddleware)
+app.use((req, res, next) => {
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+        csrfValidationMiddleware(req, res, next)
+    } else {
+        next()
+    }
+})
 
 app.options('*', cors())
 app.use(routes)
